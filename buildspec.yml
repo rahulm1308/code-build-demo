@@ -1,5 +1,12 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_ACCOUNT_ID: "123456789012"  # Replace with your actual AWS account ID
+    AWS_DEFAULT_REGION: "us-west-2"  # Replace with your actual region
+    IMAGE_REPO_NAME: "coworking_checking"  # Replace with your repository name
+    IMAGE_TAG: "latest"  # Define a tag for your image
+
 phases:
   pre_build:
     commands:
@@ -9,17 +16,20 @@ phases:
     commands:
       - echo Starting build at `date`
       - echo Building the Docker image...
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG
-      - docker images # List images to verify the build
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - echo Listing Docker images after build...
+      - docker images
       - echo Tagging the Docker image...
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - docker images # List images to verify the tag
+      - echo Listing Docker images after tag...
+      - docker images
   post_build:
     commands:
       - echo Completed build at `date`
       - echo Pushing the Docker image...
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - docker images # List images to verify the push
+      - echo Listing Docker images after push...
+      - docker images
 
 artifacts:
   files:
