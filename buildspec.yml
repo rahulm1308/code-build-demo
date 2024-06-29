@@ -33,6 +33,7 @@ phases:
 
   post_build:
     commands:
+      - set -x
       - echo "Completed build at `date`"
       - echo "Pushing the Docker image to ECR..."
       - |
