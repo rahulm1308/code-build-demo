@@ -45,4 +45,4 @@ phases:
           exit 1
         fi
       - echo "Cleaning up local Docker images..."
-      - docker rmi $IMAGE_REPO_NAME:$CODEBUILD
+      - docker rmi $IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER
