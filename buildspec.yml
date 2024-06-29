@@ -1,11 +1,5 @@
 version: 0.2
 
-env:
-  variables:
-    AWS_DEFAULT_REGION: "us-esat-1" # Replace with your region
-    AWS_ACCOUNT_ID: "825222744444"  # Replace with your AWS account ID
-    IMAGE_REPO_NAME: "coworking-checking"      # Replace with your ECR repo name
-
 phases:
   install:
     runtime-versions:
@@ -15,9 +9,13 @@ phases:
     commands:
       - echo "Logging into Amazon ECR..."
       - |
-        $(aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com) && \
-        echo "Docker login succeeded." || \
-        { echo "Docker login failed."; exit 1; }
+        aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+        if [ $? -eq 0 ]; then
+          echo "Docker login succeeded."
+        else
+          echo "Docker login failed."
+          exit 1
+        fi
       - echo "Checking environment variables..."
       - |
         [ -z "$AWS_DEFAULT_REGION" ] && echo "AWS_DEFAULT_REGION is not set" && exit 1 || echo "AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION"
@@ -38,14 +36,12 @@ phases:
       - echo "Completed build at `date`"
       - echo "Pushing the Docker image to ECR..."
       - |
-        docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER && \
-        echo "Docker push succeeded." || \
-        { echo "Docker push failed."; exit 1; }
+        docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER
+        if [ $? -eq 0 ]; then
+          echo "Docker push succeeded."
+        else
+          echo "Docker push failed."
+          exit 1
+        fi
       - echo "Cleaning up local Docker images..."
-      - docker rmi $IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER
-      - docker rmi $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER
-
-artifacts:
-  files:
-    - '**/*'
-  discard-paths: yes
+      - docker rmi $IMAGE_REPO_NAME:$CODEBUILD
